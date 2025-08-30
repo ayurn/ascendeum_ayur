@@ -1,0 +1,20 @@
+WITH filterdata AS (
+    SELECT 
+        date,
+        resource_id,
+        strftime('%s', start_time) AS start_time_seconds,
+        strftime('%s', end_time) AS end_time_seconds,
+        (strftime('%s', end_time) - strftime('%s', start_time)) AS diff_in_sec
+    FROM test_de
+)
+
+SELECT
+    date, 
+    resource_id, 
+    MIN(start_time_seconds) AS clock_in_time_seconds,
+    MAX(end_time_seconds) AS clock_out_time_seconds,
+    ROUND(SUM(diff_in_sec) / 3600.0, 2) AS active_hours,
+    ROUND((MAX(end_time_seconds) - MIN(start_time_seconds) - SUM(diff_in_sec)) / 3600.0, 2) AS break_hours
+FROM filterdata
+GROUP BY date, resource_id
+ORDER BY date, resource_id;
